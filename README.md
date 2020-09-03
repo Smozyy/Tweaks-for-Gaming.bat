@@ -1,4 +1,4 @@
-# Tweaks for Gaming
+# README
 
 Credits: Melody, Dreammjow, Calypto, Danske, Revision, LAG.. I probably forgot important names.. sorrys
 
