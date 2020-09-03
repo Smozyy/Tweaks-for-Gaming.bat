@@ -4,7 +4,7 @@ Credits: Melody, Dreammjow, Calypto, Danske, Revision, LAG.. I probably forgot i
 
 Please dont sell my work. You are free to edit or cut anything on file and use as you want.
 
-bit.ly/3goAOyc for paypal donation **NOT NECESSARY** but If you want motivate
+If you want help me bit.ly/3goAOyc for paypal donation, but is **NOT NECESSARY**
 
 Thats whats the script does:
 - enables winmgmt,trustedinstaller,appinfo,deviceinstall before running everything
