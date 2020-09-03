@@ -1,16 +1,10 @@
 # Tweaks-for-Gaming.bat
 
-Credits goes to many people, i can just say the most memorable/important ones cause they are many:
+Credits: Melody, Dreammjow, Calypto, Danske, Revision, LAG.. I probably forgot important names.. sorrys
 
-Melody, Dreammjow, Calypto, Danske, Revision discord, LAG discord.. I probably forgot important names.. sorrys
+Please dont sell my work. You are free to edit or cut anything on file and use as you want.
 
-Please dont sell my work
-
-You are free to edit or cut anything on file and use as you want.
-
-SELL IS BAD. But if you want donate, motivates me continuate this.. 
-
-bit.ly/3goAOyc for paypal and any 1$ is valuable enough to me to be happy.
+bit.ly/3goAOyc for paypal donation **NOT NECESSARY** but If you want motivate
 
 Thats whats the script does:
 - enables winmgmt,trustedinstaller,appinfo,deviceinstall before running everything
