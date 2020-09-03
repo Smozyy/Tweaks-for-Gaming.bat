@@ -1,5 +1,3 @@
-# README
-
 Credits: Melody, Dreammjow, Calypto, Danske, Revision, LAG.. I probably forgot important names.. sorrys
 
 Please dont sell my work. You are free to edit or cut anything on file and use as you want.
