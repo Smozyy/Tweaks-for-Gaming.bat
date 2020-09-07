@@ -1,47 +1,74 @@
+- Enables and starts required services to run the script completly
+- Disables possible autoruns
+- Disables Tracking Services and Data Collection
+- Disables Telemetry
+- Disables SmartScreen
+- Disables Timeline
+- Disables PageFileShutdown and ActiveProbing
+- Set Time to UTC
+- Remove Metadata Tracking
+- Remove Storage Sense
+- Enables All Folders in Explorer Navigation Panel
+- Setting Execution Policy to Unrestricted
+- Cleans all nvidia settings
+- Unlocking SILK Smoothness
+- Removes Kernel Blacklist
+- Removes Image File Execution Options
+- Disables UAC
+- Disables process and kernel mitigations
+- Disables RAM compression
+- Disables Hibernation
+- Disables Winsock Send Autotuning
+- Enables Windows Components
+- Enables AL HRTF
+- Debloats Softwares(Chrome,Notepad++,Discord,Spotify,Easy7zip)
+- Adds lines to hosts file
+- Removing any ThreadPriority dwords
+- Sets all IoLatencyCap dwords to 0
+- Disables HIPM and DIPM
+- Disables all CdpUserSvcs services
+- Removing adapters off QoS service
+- Disables QoS and NdisCap
+- Fixing Teredo in adapters
+- Fixing NetBT in adapters
+- Tweaking USB Hubs against power saving
+- Tweaking StorPort against power saving
+- %NUMBER_OF_PROCESSORS% cores settings
+- Cover all TCPOptimizer settings
+- Cover all Ethernet Adapter settings
+- OpenDNS as DNS
+- TCPAutotuning Experimental
+- Adding low TxIntDelay
+- Setting RSS Affinity to core2
+- Disables Adapter bindings
+- Disables Windows Defender
+- Disables Windows Update
+- Disables Drivers
+- Disables DMA memory protection and cores isolation
+- Disables FSO Globally and GameDVR
+- Manually disabling FSO in some games
+- Disables driver updates and searching
+- Disables automatic folder type discovery
+- Disables shortcut text for shortcuts
+- Disables Mouse Keys Keyboard Shortcut
+- Disables Data Execution Prevention
+- Disables WMI loggers
+- Disables Process and Kernel Mitigations
+- Network throttling and System responsiveness
+- Games scheduling
+- Hide Language Bar
+- Mouse Pointers Scheme None
+- Homegroup removal From Navigation Pane and File Explorer
+- Control Panel tweaks
+- Power settings tweaks
+- Memory tweaks, fixing memory leaks
+- Enables Kernel-Managed Memory and disable Meltdown/Spectre patches
+- GHIDRA HIDDEN secret tweaks
+- BCDEDIT tweaks
+- REGEDIT tweaks
+
 Credits: Melody, Dreammjow, Calypto, Danske, Revision, LAG.. I probably forgot important names.. sorrys
 
 Please dont sell my work. You are free to edit or cut anything on file and use as you want.
 
 If you want help me bit.ly/3goAOyc for paypal donation, but is **NOT NECESSARY**
-
-Thats whats the script does:
-- enables winmgmt,trustedinstaller,appinfo,deviceinstall before running everything
-- unrestricts execution policy in powershell
-- blocks telemetry
-- disables windows defender
-- disables windows update
-- improves image file executions
-- removes kernel blacklists
-- improves hosts file
-- debloats chrome if installed
-- debloats discord if installed
-- debloats 7zip if installed
-- debloats notepad++ if installed
-- enables windows components
-- enables al hrtf
-- improves drivers threadprioritys
-- set 0 to any iolatencycap dword
-- disables hipm and dipm
-- disables any cdpusersvc
-- removes adapters off qos service
-- disables qos and ndiscap
-- fixes teredo
-- fixes netbt
-- disables usb idling
-- disables storport idling
-- install aero lite but dont set it
-- configure settings based on %number_of_processors%
-- automatically configure all tcpoptimizer settings
-- automatically configure all ethernet adapter settings
-- disables not necessary adapter bindings
-- disables big list of drivers
-- disables universal safe to disable processes in all windows
-- configure some bcd params
-- disables a bunch of security and mitigation stuff
-- fixes and improves memory removing leaks and stutters
-- disables full screen optimization
-- disables lua completly
-- sets win32ps
-- adds a very basic list of ghidra dwords, i removed all LatencyTolerance or latency dwords..
-- disables timer coalescing that is energy-saving technique
-and makes questions, for do actions based on your choice..
