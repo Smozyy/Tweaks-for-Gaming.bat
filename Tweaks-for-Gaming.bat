@@ -49,6 +49,10 @@ SC START TrustedInstaller >NUL 2>&1
 SC START AppInfo >NUL 2>&1
 SC START DeviceInstall >NUL 2>&1
 
+ECHO Disabling possible autoruns
+REG DELETE "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "Spotify" /f >NUL 2>&1
+REG DELETE "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "Discord" /f >NUL 2>&1
+
 ECHO Disabling Tracking Services and Data Collection
 REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" /v AllowTelemetry /t REG_DWORD /d 0 /f > NUL 2>&1
 REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection" /v AllowTelemetry /t REG_DWORD /d 0 /f > NUL 2>&1
@@ -83,10 +87,6 @@ REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "H
 REM Disables SmartScreen
 REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" /v SmartScreenEnabled /t REG_SZ /d "Off" /f > NUL 2>&1
 REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\AppHost" /v ContentEvaluation /t REG_DWORD /d "0" /f > NUL 2>&1
-REM Remove Metadata Tracking
-REG DELETE "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" /f > NUL 2>&1
-REM Disabling Storage Sense
-REG DELETE "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\StorageSense" /f > NUL 2>&1
 REM Disable Timeline
 REG ADD "HKLM\SOFTWARE\Policies\Microsoft\Windows\System" /v "EnableActivityFeed" /t REG_DWORD /d "0" /f > NUL 2>&1
 REM Disable PageFile and ActiveProbing
@@ -94,6 +94,10 @@ REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Mem
 REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NlaSvc\Parameters\Internet" /v "EnableActiveProbing" /t REG_DWORD /d "0" /f > NUL 2>&1
 REM Set Time to UTC
 RED ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\TimeZoneInformation" /v RealTimeIsUniversal /t REG_DWORD /d "1" /f > NUL 2>&1
+REM Remove Metadata Tracking
+REG DELETE "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" /f > NUL 2>&1
+REM Remove Storage Sense
+REG DELETE "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\StorageSense" /f > NUL 2>&1
 
 ECHO Enables All Folders in Explorer Navigation Panel
 REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "NavPaneShowAllFolders" /t REG_DWORD /d "1" /f >NUL 2>&1
@@ -101,10 +105,13 @@ REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Ad
 ECHO Setting Execution Policy to Unrestricted
 POWERSHELL "Set-ExecutionPolicy -ExecutionPolicy Unrestricted" >NUL 2>&1
 
-ECHO Cleaning all nvidia settings...
+ECHO Cleaning all nvidia settings
 del "C:\ProgramData\NVIDIA Corporation\Drs\nvdrsdb0.bin" >NUL 2>&1
 del "C:\ProgramData\NVIDIA Corporation\Drs\nvdrsdb1.bin" >NUL 2>&1
 del "C:\ProgramData\NVIDIA Corporation\Drs\nvdrssel.bin" >NUL 2>&1
+
+ECHO Unlocking SILK Smoothness
+REG ADD "HKLM\System\CurrentControlSet\Services\nvlddmkm\FTS" /v "EnableRID61684" /t REG_DWORD /d "1" /f >NUL 2>&1
 
 ECHO Removing Kernel Blacklist
 REG DELETE "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\GraphicsDrivers\BlockList\Kernel" /va /reg:64 /f >NUL 2>&1
@@ -112,7 +119,7 @@ REG DELETE "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\GraphicsDrivers\
 ECHO Removing Image File Execution Options
 POWERSHELL "Remove-Item -Path \"HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*\" -Recurse -ErrorAction SilentlyContinue" >NUL 2>&1
 
-ECHO Disabling User acess control (LUA)
+ECHO Disabling UAC
 REG ADD "HKLM\System\CurrentControlSet\Services\Appinfo" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableVirtualization" /t REG_DWORD /d "0" /f >NUL 2>&1
 REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableInstallerDetection" /t REG_DWORD /d "0" /f >NUL 2>&1
@@ -153,25 +160,23 @@ ECHO Enabling AL HRTF
 ECHO hrtf ^= true > "%appdata%\alsoft.ini"
 ECHO hrtf ^= true > "C:\ProgramData\alsoft.ini"
 
-IF EXIST "C:\Program Files\Easy 7-Zip\7zFM.exe" ECHO Debloating 7Zip
-REG ADD "HKCU\Software\7-Zip\Options" /v "CascadedMenu" /t REG_DWORD /d "0" /f >NUL 2>&1
-REG ADD "HKCU\Software\7-Zip\Options" /v "MenuIcons" /t REG_DWORD /d "1" /f >NUL 2>&1
-REG ADD "HKCU\Software\7-Zip\Options" /v "ContextMenu" /t REG_DWORD /d "4132" /f >NUL 2>&1
-REG ADD "HKCU\Software\7-Zip\FM\Columns" /v "RootFolder" /t REG_BINARY /d "0100000000000000010000000400000001000000A0000000" /f >NUL 2>&1
-del "C:\Users\Public\Desktop\7-Zip File Manager.lnk" >NUL 2>&1
-
-IF EXIST "C:\Program Files\Notepad++\notepad++.exe" ECHO Debloating Notepad++
-del /F /Q "%ProgramFiles%\Notepad++\updater" >NUL 2>&1
-
-IF EXIST "C:\Program Files\Google\Chrome\Application\chrome.exe" ECHO Debloating Google Chrome
+ECHO Debloating Softwares
+REM Google Chrome
 taskkill /f /im chrome.exe >NUL 2>&1
 schtasks.exe /change /TN "\GoogleUpdateTaskMachineCore" /Disable >NUL 2>&1
 schtasks.exe /change /TN "\GoogleUpdateTaskMachineUA" /Disable >NUL 2>&1
 sc delete gupdate >NUL 2>&1
 sc delete gupdatem >NUL 2>&1
 sc delete GoogleChromeElevationService >NUL 2>&1
-
-IF EXIST "%localappdata%\Discord\Update.exe" ECHO Debloating Discord
+REM Notepad++
+del /F /Q "%ProgramFiles%\Notepad++\updater" >NUL 2>&1
+REM Easy7Zip
+REG ADD "HKCU\Software\7-Zip\Options" /v "CascadedMenu" /t REG_DWORD /d "0" /f >NUL 2>&1
+REG ADD "HKCU\Software\7-Zip\Options" /v "MenuIcons" /t REG_DWORD /d "1" /f >NUL 2>&1
+REG ADD "HKCU\Software\7-Zip\Options" /v "ContextMenu" /t REG_DWORD /d "4132" /f >NUL 2>&1
+REG ADD "HKCU\Software\7-Zip\FM\Columns" /v "RootFolder" /t REG_BINARY /d "0100000000000000010000000400000001000000A0000000" /f >NUL 2>&1
+del "C:\Users\Public\Desktop\7-Zip File Manager.lnk" >NUL 2>&1
+REM Discord
 taskkill /f /im discord.exe >NUL 2>&1
 rmdir /s /q "%appdata%\discord\0.0.307\modules\discord_dispatch" >NUL 2>&1
 rmdir /s /q "%appdata%\discord\0.0.307\modules\discord_krisp" >NUL 2>&1
@@ -181,9 +186,7 @@ rmdir /s /q "%appdata%\discord\0.0.307\modules\discord_erlpack" >NUL 2>&1
 rmdir /s /q "%appdata%\discord\0.0.307\modules\discord_game_utils" >NUL 2>&1
 rmdir /s /q "%appdata%\discord\0.0.307\modules\discord_spellcheck" >NUL 2>&1
 attrib +r "%localappdata%\Discord\Update.exe" >NUL 2>&1
-REG DELETE "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "Discord" /f >NUL 2>&1
-
-IF EXIST "%appdata%\Spotify\Spotify.exe" ECHO Debloating Spotify
+REM Spotify
 taskkill /f /im spotify.exe >NUL 2>&1
 del /f/s/q "%appdata%\Spotify\SpotifyMigrator.exe" >NUL 2>&1
 del /f/s/q "%appdata%\Spotify\SpotifyStartupTask.exe" >NUL 2>&1
@@ -274,7 +277,6 @@ del /f/s/q "%appdata%\Spotify\locales\zh-CN.pak" >NUL 2>&1
 del /f/s/q "%appdata%\Spotify\locales\zh-Hant.mo" >NUL 2>&1
 del /f/s/q "%appdata%\Spotify\locales\zh-TW.pak" >NUL 2>&1
 ECHO ui.hardware_acceleration=false > %appdata%\Spotify\prefs
-REG DELETE "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "Spotify" /f >NUL 2>&1
 
 ECHO Adding lines to hosts file
 SET NEWLINE=^& echo.
@@ -3100,7 +3102,6 @@ ECHO Using TCPAutotuning Experimental and CUBIC Congestion
 POWERSHELL Set-NetTCPSetting -SettingName internetcustom -AutoTuningLevelLocal experimental -ErrorAction SilentlyContinue
 
 ECHO Adding low TxIntDelay
-Reg.exe add "HKLM\System\ControlSet001\Control\Class\{4d36e972-e325-11ce-bfc1-08002be10318}\0000" /v "TxIntDelay" /t REG_SZ /d "5" /f >NUL 2>&1
 for /f %%a in ('reg query "HKLM\System\ControlSet001\Control\Class\{4D36E972-E325-11CE-BFC1-08002bE10318}" /f "PCI\VEN_" /d /s^|Findstr HKEY_') do (
 reg add %%a /v "TxIntDelay" /t REG_SZ /d "5" /f >NUL 2>&1
 )
@@ -3151,7 +3152,7 @@ REG ADD "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" /v "Detectio
 REG ADD "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" /v "DetectionFrequencyEnabled" /t REG_DWORD /d "1" /f >NUL 2>&1
 REG ADD "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" /v "EnableFeaturedSoftware" /t REG_DWORD /d "1" /f >NUL 2>&1
 
-ECHO Disabling Drivers with modified Adams list
+ECHO Disabling Drivers
 REG ADD "HKLM\System\CurrentControlSet\Services\AcpiDev" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\acpipagr" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\AcpiPmi" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
@@ -3174,12 +3175,10 @@ REG ADD "HKLM\System\CurrentControlSet\Services\condrv" /v "Start" /t REG_DWORD 
 REG ADD "HKLM\System\CurrentControlSet\Services\CSC" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\dam" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\dfsc" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
-REG ADD "HKLM\System\CurrentControlSet\Services\Dhcp" /v "DependOnService" /t REG_MULTI_SZ /d "NSI\0Afd" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\EhStorClass" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\fastfat" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\FileCrypt" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\FileInfo" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
-REG ADD "HKLM\System\CurrentControlSet\Services\fvevol" /v "ErrorControl" /t REG_DWORD /d "0" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\fvevol" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\GpuEnergyDrv" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\GraphicsPerfSvc" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
@@ -3270,6 +3269,8 @@ REG ADD "HKLM\System\CurrentControlSet\Services\MpsSvc" /v "Start" /t REG_DWORD 
 REG ADD "HKLM\System\CurrentControlSet\Services\CertPropSvc" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\FontCache3.0.0.0" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\hidserv" /F /V "DependOnService" /T REG_MULTI_SZ /d "" /f >NUL 2>&1
+REG ADD "HKLM\System\CurrentControlSet\Services\fvevol" /v "ErrorControl" /t REG_DWORD /d "0" /f >NUL 2>&1
+REG ADD "HKLM\System\CurrentControlSet\Services\Dhcp" /v "DependOnService" /t REG_MULTI_SZ /d "NSI\0Afd" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e967-e325-11ce-bfc1-08002be10318}" /v "LowerFilters" /t REG_MULTI_SZ /d "" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Control\Class\{71a27cdd-812a-11d0-bec7-08002be2092f}" /v "LowerFilters" /t REG_MULTI_SZ /d "" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e96c-e325-11ce-bfc1-08002be10318}" /v "UpperFilters" /t REG_MULTI_SZ /d "" /f >NUL 2>&1
@@ -3313,8 +3314,8 @@ REG ADD "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate" /v "ExcludeWUDr
 REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\DriverSearching" /v "SearchOrderConfig" /t REG_DWORD /d "0" /f >NUL 2>&1
 
 ECHO Disabling automatic folder type discovery
-REG DELETE "HKCU\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\Bags" /f >NUL 2>&1
 REG ADD "HKCU\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\Bags\AllFolders\Shell" /v "FolderType" /t REG_SZ /d "NotSpecified" /f >NUL 2>&1
+REG DELETE "HKCU\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\Bags" /f >NUL 2>&1
 
 ECHO Disabling shortcut text for shortcuts
 REG ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer" /v "link" /t REG_BINARY /d "00000000" /f >NUL 2>&1
@@ -3329,7 +3330,7 @@ REG ADD "HKLM\Software\Policies\Microsoft\Windows\Explorer" /v "NoDataExecutionP
 REG ADD "HKLM\Software\Policies\Microsoft\Windows\System" /v "DisableHHDEP" /t REG_DWORD /d "1" /f >NUL 2>&1
 REG ADD "HKLM\Software\Policies\Microsoft\Windows\System" /v "EnableSmartScreen" /t REG_DWORD /d "0" /f >NUL 2>&1
 
-ECHO Disabling WMI Log
+ECHO Disabling WMI
 REG ADD "HKLM\System\CurrentControlSet\Control\WMI\Autologger\AppModel" /v "Start" /t REG_DWORD /d "0" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Control\WMI\Autologger\Cellcore" /v "Start" /t REG_DWORD /d "0" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Control\WMI\Autologger\Circular Kernel Context Logger" /v "Start" /t REG_DWORD /d "0" /f >NUL 2>&1
@@ -3431,6 +3432,13 @@ REG ADD "HKCR\WOW6432Node\CLSID\{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}\ShellFold
 REG ADD "HKCR\CLSID\{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}\ShellFolder" /v "Attributes" /t REG_DWORD /d "2962489444" /f >NUL 2>&1
 
 ECHO Control Panel tweaks
+REG ADD "HKU\.DEFAULT\Control Panel\Desktop" /v "ForegroundLockTimeout" /t REG_DWORD /d "0" /f >NUL 2>&1
+REG ADD "HKU\.DEFAULT\Control Panel\Desktop" /v "MenuShowDelay" /t REG_SZ /d "0" /f >NUL 2>&1
+REG ADD "HKU\.DEFAULT\Control Panel\Desktop" /v "MouseWheelRouting" /t REG_DWORD /d "0" /f >NUL 2>&1
+REG ADD "HKU\.DEFAULT\Control Panel\Mouse" /v "Beep" /t REG_SZ /d "No" /f >NUL 2>&1
+REG ADD "HKU\.DEFAULT\Control Panel\Mouse" /v "ExtendedSounds" /t REG_SZ /d "No" /f >NUL 2>&1
+REG ADD "HKU\.DEFAULT\Control Panel\Sound" /v "Beep" /t REG_SZ /d "no" /f >NUL 2>&1
+REG ADD "HKU\.DEFAULT\Control Panel\Sound" /v "ExtendedSounds" /t REG_SZ /d "no" /f >NUL 2>&1
 REM Disable Acessibility keys
 REG ADD "HKU\.DEFAULT\Control Panel\Accessibility\HighContrast" /v "Flags" /t REG_SZ /d "0" /f >NUL 2>&1
 REG ADD "HKU\.DEFAULT\Control Panel\Accessibility\Keyboard Response" /v "Flags" /t REG_SZ /d "0" /f >NUL 2>&1
@@ -3439,14 +3447,6 @@ REG ADD "HKU\.DEFAULT\Control Panel\Accessibility\SoundSentry" /v "Flags" /t REG
 REG ADD "HKU\.DEFAULT\Control Panel\Accessibility\StickyKeys" /v "Flags" /t REG_SZ /d "0" /f >NUL 2>&1
 REG ADD "HKU\.DEFAULT\Control Panel\Accessibility\TimeOut" /v "Flags" /t REG_SZ /d "0" /f >NUL 2>&1
 REG ADD "HKU\.DEFAULT\Control Panel\Accessibility\ToggleKeys" /v "Flags" /t REG_SZ /d "0" /f >NUL 2>&1
-REM Quality of Life control panel stuff
-REG ADD "HKU\.DEFAULT\Control Panel\Desktop" /v "ForegroundLockTimeout" /t REG_DWORD /d "0" /f >NUL 2>&1
-REG ADD "HKU\.DEFAULT\Control Panel\Desktop" /v "MenuShowDelay" /t REG_SZ /d "0" /f >NUL 2>&1
-REG ADD "HKU\.DEFAULT\Control Panel\Desktop" /v "MouseWheelRouting" /t REG_DWORD /d "0" /f >NUL 2>&1
-REG ADD "HKU\.DEFAULT\Control Panel\Mouse" /v "Beep" /t REG_SZ /d "No" /f >NUL 2>&1
-REG ADD "HKU\.DEFAULT\Control Panel\Mouse" /v "ExtendedSounds" /t REG_SZ /d "No" /f >NUL 2>&1
-REG ADD "HKU\.DEFAULT\Control Panel\Sound" /v "Beep" /t REG_SZ /d "no" /f >NUL 2>&1
-REG ADD "HKU\.DEFAULT\Control Panel\Sound" /v "ExtendedSounds" /t REG_SZ /d "no" /f >NUL 2>&1
 
 ECHO Power settings tweaks
 REG ADD "HKCU\Control Panel\PowerCfg" /v "CurrentPowerPolicy" /t REG_SZ /d "4" /f >NUL 2>&1
@@ -3474,7 +3474,6 @@ REG ADD "HKLM\System\CurrentControlSet\Control\Session Manager\Memory Management
 REG ADD "HKLM\System\CurrentControlSet\Control\Session Manager\Memory Management" /v "FeatureSettingsOverrideMask" /t REG_DWORD /d "3" /f >NUL 2>&1
 
 ECHO Applying hidden ghidra gpu dwords
-REG ADD "HKLM\System\CurrentControlSet\Services\nvlddmkm\FTS" /v "EnableRID61684" /t REG_DWORD /d "1" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\nvlddmkm" /v "DpiMapIommuContiguous" /t REG_DWORD /d "1" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\nvlddmkm" /v "PreferSystemMemoryContiguous" /t REG_DWORD /d "1" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\nvlddmkm" /v "RMDisablePostL2Compression" /t REG_DWORD /d "1" /f >NUL 2>&1
@@ -3924,10 +3923,13 @@ for /f "tokens=3*" %%A in ('reg query "HKLM\Software\Microsoft\Windows NT\Curren
 echo %WinVersion% | find "Windows 7" > nul
 if %errorlevel% equ 0 (
 ECHO Applying Specific Windows 7 tweaks
+REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Reliability" /v "TimeStampInterval" /t REG_DWORD /d "0" /f >NUL 2>&1
+REM Disable synt tick
+BCDEDIT /set useplatformtick Yes >NUL 2>&1
+REM Drivers Foolproof
 REG ADD "HKLM\System\CurrentControlSet\Services\Power" /v "Start" /t REG_DWORD /d 2 /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\atapi" /v "Start" /t REG_DWORD /d "0" /f >NUL 2>&1
-REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Reliability" /v "TimeStampInterval" /t REG_DWORD /d "0" /f >NUL 2>&1
-BCDEDIT /set useplatformtick Yes >NUL 2>&1
+REM Service List
 REG ADD "HKLM\System\CurrentControlSet\services\AudioSrv" /v "DependOnService" /t REG_MULTI_SZ /d "AudioEndpointBuilder\0RpcSs" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\AeLookupSvc" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\ALG" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
@@ -4035,10 +4037,13 @@ REG ADD "HKLM\System\CurrentControlSet\Services\WwanSvc" /v "Start" /t REG_DWORD
 echo %WinVersion% | find "Windows 8.1" > nul
 if %errorlevel% equ 0 (
 ECHO Applying Specific Windows 8 tweaks
+REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Reliability" /v "TimeStampInterval" /t REG_DWORD /d "0" /f >NUL 2>&1
+REM Specific mitigation code win8
 REG ADD "HKLM\System\CurrentControlSet\Control\Session Manager\kernel" /v "MitigationOptions" /t REG_BINARY /d "00000000000000000000000000000000" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Control\Session Manager\kernel" /v "MitigationAuditOptions" /t REG_BINARY /d "00000000000000000000000000000000" /f >NUL 2>&1
-REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Reliability" /v "TimeStampInterval" /t REG_DWORD /d "0" /f >NUL 2>&1
+REM Disable synt tick
 BCDEDIT /set useplatformtick Yes >NUL 2>&1
+REM Service list
 REG ADD "HKLM\System\CurrentControlSet\Services\AeLookupSvc" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\ALG" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\AppIDSvc" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
@@ -4169,9 +4174,12 @@ REG ADD "HKLM\System\CurrentControlSet\Services\WwanSvc" /v "Start" /t REG_DWORD
 echo %WinVersion% | find "Windows 10" > nul
 if %errorlevel% equ 0 (
 ECHO Applying Specific Windows 10 tweaks
+REM Specific mitigation code win10
 REG ADD "HKLM\System\CurrentControlSet\Control\Session Manager\kernel" /v "MitigationOptions" /t REG_BINARY /d "22222222222222222002000000200000" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Control\Session Manager\kernel" /v "MitigationAuditOptions" /t REG_BINARY /d "20000020202022220000000000000000" /f >NUL 2>&1
+REM Disable synt tick
 BCDEDIT /set useplatformtick No >NUL 2>&1
+REM Service List
 REG ADD "HKLM\System\CurrentControlSet\Services\AppVClient" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\CertPropSvc" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\diagnosticshub.standardcollector.service" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
@@ -4254,7 +4262,7 @@ goto :nextquestion
 
 :nextquestion
 ECHO.
-Echo. Tweak processes with Prioritys?
+Echo. Tweak processes with IFEO Prioritys?
 Echo. 
 Echo. [1] Yes
 Echo. 
@@ -4290,7 +4298,7 @@ goto :nextquestion
 
 :nextquestion
 ECHO.
-Echo. Set pagefile to 32gb?
+Echo. Tweak pagefile to 32gb?
 Echo. 
 Echo. [1] Yes
 Echo. 
@@ -4325,7 +4333,7 @@ goto :nextquestion
 
 :nextquestion
 ECHO.
-Echo. Tweak drivers with Thread Prioritys?
+Echo. Tweak drivers with ThreadPriority?
 Echo. 
 Echo. [1] Yes
 Echo. 
@@ -4338,37 +4346,20 @@ if errorlevel 1 goto TP
 :TP
 ECHO Your Answer:
 ECHO 1
-Reg.exe add "HKLM\System\CurrentControlSet\services\nvlddmkm\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\AFD\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\Audiosrv\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\disk\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\DXGKrnl\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\HDAudBus\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\HidUsb\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\iaStorAC\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\iaStorAVC\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\kbdhid\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\monitor\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\mouhid\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\NDIS\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
 Reg.exe add "HKLM\System\CurrentControlSet\Services\Ntfs\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
 Reg.exe add "HKLM\System\CurrentControlSet\Services\storahci\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
 Reg.exe add "HKLM\System\CurrentControlSet\Services\stornvme\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\Tcpip\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\TCPIP6\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\usbccgp\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\usbehci\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\usbhub\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\USBHUB3\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\usbohci\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\usbuhci\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
-Reg.exe add "HKLM\System\CurrentControlSet\Services\USBXHCI\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
+Reg.exe add "HKLM\System\CurrentControlSet\Services\Audiosrv\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
+Reg.exe add "HKLM\System\CurrentControlSet\Services\disk\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
+Reg.exe add "HKLM\System\CurrentControlSet\Services\iaStorAC\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
+Reg.exe add "HKLM\System\CurrentControlSet\Services\iaStorAVC\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
+Reg.exe add "HKLM\System\CurrentControlSet\Services\HDAudBus\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
 ECHO.
 goto :nextquestion
 
 :NOTP
 ECHO Your Answer:
-ECHO 2
+ECHO 2m
 ECHO.
 goto :nextquestion
 
@@ -4387,9 +4378,9 @@ if errorlevel 1 goto VALORANT
 :VALORANT
 ECHO Your Answer:
 ECHO 1
-bcdedit.exe /set {current} nx OptIn >NUL 2>&1
-bcdedit.exe /set testsigning off >NUL 2>&1
-bcdedit.exe /set nointegritychecks off >NUL 2>&1
+BCDEDIT /set nx OptIn >NUL 2>&1
+BCDEDIT /set testsigning off >NUL 2>&1
+BCDEDIT /set nointegritychecks off >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\Appinfo" /v "Start" /t REG_DWORD /d "2" /f >NUL 2>&1
 REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableVirtualization" /t REG_DWORD /d "1" /f >NUL 2>&1
 REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableInstallerDetection" /t REG_DWORD /d "1" /f >NUL 2>&1
@@ -4425,8 +4416,8 @@ if errorlevel 1 goto AFD
 :AFD
 ECHO Your Answer:
 ECHO 1
-REG ADD "HKLM\System\CurrentControlSet\Services\AFD" /v "Start" /t REG_DWORD /d 4 /f >NUL 2>&1
-REG ADD "HKLM\System\CurrentControlSet\Services\Dhcp" /v "Start" /t REG_DWORD /d 4 /f >NUL 2>&1
+REG ADD "HKLM\System\CurrentControlSet\Services\AFD" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
+REG ADD "HKLM\System\CurrentControlSet\Services\Dhcp" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 C:\Windows\System32\ncpa.cpl
 ECHO.
 goto :ending
@@ -4442,83 +4433,20 @@ ECHO Finished with tweaking
 ECHO Report feedbacks, end of script
 pause
 
-::del /F /Q "%WINDIR%\system32\drivers\etc\hosts" >NUL 2>&1
-
-::testing
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "D3PCLatency" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "F1TransitionLatency" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "LOWLATENCY" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "Node3DLowLatency" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "PciLatencyTimerControl" /t REG_DWORD /d "32" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "RMDeepL1EntryLatencyUsec" /t REG_DWORD /d "1" /f >NUL 2>&1
-:::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "RmGspcMaxFtuS" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "RmGspcMinFtuS" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "RmGspcPerioduS" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "RMLpwrEiIdleThresholdUs" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "RMLpwrGrIdleThresholdUs" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "RMLpwrGrRgIdleThresholdUs" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "RMLpwrMsIdleThresholdUs" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "VRDirectFlipDPCDelayUs" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "VRDirectFlipTimingMarginUs" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "VRDirectJITFlipMsHybridFlipDelayUs" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "vrrCursorMarginUs" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "vrrDeflickerMarginUs" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" /v "vrrDeflickerMaxUs" /t REG_DWORD /d "1" /f >NUL 2>&1
-
-::above are all trash scratches
-
-::ECHO Force your  mouse cursor to refresh faster & make it slightly smoother
-::REG ADD "HKLM\Software\Microsoft\Input\Settings\ControllerProcessor\CursorMagnetism" /v "MagnetismUpdateIntervalInMilliseconds" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\Software\Microsoft\Input\Settings\ControllerProcessor\CursorSpeed" /v "CursorUpdateInterval" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Services\kbdclass\Parameters" /v "KeyboardDataQueueSize" /t REG_DWORD /d "16" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Services\mouclass\Parameters" /v "MouseDataQueueSize" /t REG_DWORD /d "16" /f >NUL 2>&1
-::Might help 0 0 1920 1080 applications that dont have raw input
-::REG ADD "HKLM\System\CurrentControlSet\Services\mouhid\Parameters" /v "TreatAbsoluteAsRelative" /t REG_DWORD /d "0" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Services\mouhid\Parameters" /v "TreatAbsolutePointerAsAbsolute" /t REG_DWORD /d "1" /f >NUL 2>&1
-::This can solve issues when using MouseDataQueueSize but block screentouch
-::REG ADD "HKLM\System\CurrentControlSet\Services\mouhid\Parameters" /v "UseOnlyMice" /t REG_DWORD /d "1" /f >NUL 2>&1
-::Was testing this
-::REG ADD "HKLM\System\CurrentControlSet\Services\USBXHCI\Parameters\Wdf" /v "NoExtraBufferRoom" /t REG_DWORD /d "1" /f >NUL 2>&1
-
-
-::REG ADD "HKLM\System\CurrentControlSet\Control\Session Manager\kernel" /v "DisableAutoBoost" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Services\intelppm\Parameters" /v "AcpiFirmwareWatchDog" /t REG_DWORD /d "0" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Services\intelppm\Parameters" /v "AmliWatchdogAction" /t REG_DWORD /d "0" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Services\intelppm\Parameters" /v "AmliWatchdogTimeout" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Services\intelppm\Parameters" /v "WatchdogTimeout" /t REG_DWORD /d "1" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Session Manager\Throttle" /v "PerfEnablePackageIdle" /t REG_DWORD /d "0" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Processor" /v "AllowPepPerfStates" /t REG_DWORD /d "0" /f >NUL 2>&1
-::REG ADD "HKLM\System\CurrentControlSet\Control\Processor" /v "CPPCEnable" /t REG_DWORD /d "0" /f >NUL 2>&1
-
-::IF NOT EXIST "C:\Program Files\Notepad++\notepad++.exe" start "nppInstaller" "%~dp0\etc\npp.7.8.9.Installer.x64.exe" /S /D=%ProgramFiles%\Notepad++\
-::"%~dp0\etc\processhacker-2.39-setup.exe" /SUPPRESSMSGBOXES /VERYSILENT
-::IF NOT EXIST "C:\Program Files\Google\Chrome\Application\chrome.exe" start "" /wait "%~dp0\etc\ChromeSetup.exe" /silent /install >NUL 2>&1
-::IF NOT EXIST "%appdata%\Spotify\Spotify.exe" start "" /wait "%~dp0\etc\SpotifySetup.exe" /silent >NUL 2>&1
-
-::ECHO Replacing aero themes with aero light
-::IF EXIST "%WinDir%\Resources\Themes\aero\aerolite.msstyles" (
-::powershell "$content = [System.IO.File]::ReadAllText('%WinDir%\Resources\Themes\aero.theme').Replace('%ResourceDir%\Themes\Aero\Aero.msstyles','%ResourceDir%\Themes\Aero\Aerolite.msstyles'); [System.IO.File]::WriteAllText('%WinDir%\Resources\Themes\aerolite.theme', $content)" >NUL 2>&1
-::ECHO Installing Aero Lite Theme
-::IF EXIST "%WinDir%\Resources\Themes\light.theme" (
-::powershell "$content = [System.IO.File]::ReadAllText('%WinDir%\Resources\Themes\light.theme').Replace('%ResourceDir%\Themes\Aero\Aero.msstyles','%ResourceDir%\Themes\Aero\Aerolite.msstyles'); [System.IO.File]::WriteAllText('%WinDir%\Resources\Themes\lightlite.theme', $content)" >NUL 2>&1 
-::ECHO Installing Light Lite Theme
-::)
-::)
-
-::IF EXIST "C:\Program Files\Process Hacker 2\ProcessHacker.exe" ECHO Debloating Process Hacker
-::taskkill /f /im "Process Hacker.exe" >NUL 2>&1
-::ren "C:\Program Files\Process Hacker 2" PH >NUL 2>&1
-::del "C:\Program Files\PH\kprocesshacker.sys" >NUL 2>&1
-::ren "C:\Program Files\PH\ProcessHacker.exe" PH.exe >NUL 2>&1
-::ren "C:\Program Files\PH\ProcessHacker.sig" PH.sig >NUL 2>&1
-::del "C:\Users\%username%\desktop\Process Hacker 2.lnk" >NUL 2>&1
-::del /F /Q "%appdata%\Process Hacker 2\settings.xml" >NUL 2>&1
-::mkdir "%appdata%\Process Hacker 2" >NUL 2>&1
-::echo ^<settings^> >>"%appdata%\Process Hacker 2\settings.xml"
-::echo ^<setting name="DisabledPlugins"^>DotNetTools.dll^|ExtendedNotifications.dll^|ExtendedServices.dll^|ExtendedTools.dll^|HardwareDevices.dll^|NetworkTools.dll^|OnlineChecks.dll^|SbieSupport.dll^|ToolStatus.dll^|Updater.dll^|UserNotes.dll^</setting^> >>"%appdata%\Process Hacker 2\settings.xml"
-::echo ^<setting name="ProcessTreeListColumns"^>@96^|0,0,200^|2,1,45^|3,2,70^|22,6,45^|45,3,90^|46,5,100^|52,4,80^</setting^> >>"%appdata%\Process Hacker 2\settings.xml"
-::echo ^</settings^> >>"%appdata%\Process Hacker 2\settings.xml"
-
-::IF EXIST "C:\Program Files\PH\PH.exe" ECHO Replacing taskmgr to Process Hacker...
-::IF EXIST "C:\Program Files\PH\PH.exe" REG ADD "HKLM\System\CurrentControlSet\Services\PCW" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
-::IF EXIST "C:\Program Files\PH\PH.exe" REG ADD "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\taskmgr.exe" /v "Debugger" /t REG_SZ /d "C:\Program Files\PH\PH.exe" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\usbccgp\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\usbehci\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\usbhub\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\USBHUB3\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\usbohci\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\usbuhci\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\USBXHCI\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\mouhid\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\services\nvlddmkm\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\DXGKrnl\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\HidUsb\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\kbdhid\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\monitor\Parameters" /v "ThreadPriority" /t REG_DWORD /d "15" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\AFD\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\NDIS\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\Tcpip\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
+::Reg.exe add "HKLM\System\CurrentControlSet\Services\TCPIP6\Parameters" /v "ThreadPriority" /t REG_DWORD /d "0" /f >NUL 2>&1
