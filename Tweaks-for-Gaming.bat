@@ -54,7 +54,7 @@ REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\D
 REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection" /v AllowTelemetry /t REG_DWORD /d 0 /f > NUL 2>&1
 
 ECHO Disabling Telemetry
-echo "" > C:\ProgramData\Microsoft\Diagnosis\ETLLogs\AutoLogger\AutoLogger-Diagtrack-Listener.etl
+echo "" > C:\ProgramData\Microsoft\Diagnosis\ETLLogs\AutoLogger\AutoLogger-Diagtrack-Listener.etl >NUL 2>&1
 REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\WMI\AutoLogger\AutoLogger-Diagtrack-Listener" /v "Start" /t REG_DWORD /d "0" /f > NUL 2>&1
 REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\WMI\AutoLogger\SQMLogger" /v "Start" /t REG_DWORD /d "0" /f > NUL 2>&1
 REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config" /v "DownloadMode" /t REG_DWORD /d "0" /f > NUL 2>&1
@@ -96,7 +96,7 @@ REM Set Time to UTC
 RED ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\TimeZoneInformation" /v RealTimeIsUniversal /t REG_DWORD /d "1" /f > NUL 2>&1
 
 ECHO Enables All Folders in Explorer Navigation Panel
-REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "NavPaneShowAllFolders" /t REG_DWORD /d "1" /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "NavPaneShowAllFolders" /t REG_DWORD /d "1" /f >NUL 2>&1
 
 ECHO Setting Execution Policy to Unrestricted
 POWERSHELL "Set-ExecutionPolicy -ExecutionPolicy Unrestricted" >NUL 2>&1
@@ -111,6 +111,19 @@ REG DELETE "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\GraphicsDrivers\
 
 ECHO Removing Image File Execution Options
 POWERSHELL "Remove-Item -Path \"HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*\" -Recurse -ErrorAction SilentlyContinue" >NUL 2>&1
+
+ECHO Disabling User acess control (LUA)
+REG ADD "HKLM\System\CurrentControlSet\Services\Appinfo" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableVirtualization" /t REG_DWORD /d "0" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableInstallerDetection" /t REG_DWORD /d "0" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "PromptOnSecureDesktop" /t REG_DWORD /d "0" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableLUA" /t REG_DWORD /d "0" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableSecureUIAPaths" /t REG_DWORD /d "0" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "ConsentPromptBehaviorAdmin" /t REG_DWORD /d "0" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "ValidateAdminCodeSignatures" /t REG_DWORD /d "0" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableUIADesktopToggle" /t REG_DWORD /d "0" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "ConsentPromptBehaviorUser" /t REG_DWORD /d "0" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "FilterAdministratorToken" /t REG_DWORD /d "0" /f >NUL 2>&1
 
 ECHO Disabling mitigations
 POWERSHELL "ForEach($v in (Get-Command -Name \"Set-ProcessMitigation\").Parameters[\"Disable\"].Attributes.ValidValues){Set-ProcessMitigation -System -Disable $v.ToString() -ErrorAction SilentlyContinue}"  >NUL 2>&1
@@ -262,24 +275,6 @@ del /f/s/q "%appdata%\Spotify\locales\zh-Hant.mo" >NUL 2>&1
 del /f/s/q "%appdata%\Spotify\locales\zh-TW.pak" >NUL 2>&1
 ECHO ui.hardware_acceleration=false > %appdata%\Spotify\prefs
 REG DELETE "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "Spotify" /f >NUL 2>&1
-
-IF EXIST "C:\Program Files\Process Hacker 2\ProcessHacker.exe" ECHO Debloating Process Hacker
-taskkill /f /im "Process Hacker.exe" >NUL 2>&1
-ren "C:\Program Files\Process Hacker 2" PH >NUL 2>&1
-del "C:\Program Files\PH\kprocesshacker.sys" >NUL 2>&1
-ren "C:\Program Files\PH\ProcessHacker.exe" PH.exe >NUL 2>&1
-ren "C:\Program Files\PH\ProcessHacker.sig" PH.sig >NUL 2>&1
-del "C:\Users\%username%\desktop\Process Hacker 2.lnk" >NUL 2>&1
-del /F /Q "%appdata%\Process Hacker 2\settings.xml" >NUL 2>&1
-mkdir "%appdata%\Process Hacker 2" >NUL 2>&1
-echo ^<settings^> >>"%appdata%\Process Hacker 2\settings.xml"
-echo ^<setting name="DisabledPlugins"^>DotNetTools.dll^|ExtendedNotifications.dll^|ExtendedServices.dll^|ExtendedTools.dll^|HardwareDevices.dll^|NetworkTools.dll^|OnlineChecks.dll^|SbieSupport.dll^|ToolStatus.dll^|Updater.dll^|UserNotes.dll^</setting^> >>"%appdata%\Process Hacker 2\settings.xml"
-echo ^<setting name="ProcessTreeListColumns"^>@96^|0,0,200^|2,1,45^|3,2,70^|22,6,45^|45,3,90^|46,5,100^|52,4,80^</setting^> >>"%appdata%\Process Hacker 2\settings.xml"
-echo ^</settings^> >>"%appdata%\Process Hacker 2\settings.xml"
-
-IF EXIST "C:\Program Files\PH\PH.exe" ECHO Replacing taskmgr to Process Hacker...
-IF EXIST "C:\Program Files\PH\PH.exe" REG ADD "HKLM\System\CurrentControlSet\Services\PCW" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
-IF EXIST "C:\Program Files\PH\PH.exe" REG ADD "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\taskmgr.exe" /v "Debugger" /t REG_SZ /d "C:\Program Files\PH\PH.exe" /f >NUL 2>&1
 
 ECHO Adding lines to hosts file
 SET NEWLINE=^& echo.
@@ -533,7 +528,6 @@ FIND /C /I "ad-miner.com" %WINDIR%\system32\drivers\etc\hosts > NUL 2>&1
 IF %ERRORLEVEL% NEQ 0 ECHO %NEWLINE%^0.0.0.0 ad-miner.com>>%WINDIR%\System32\drivers\etc\hosts
 FIND /C /I "adminer.com" %WINDIR%\system32\drivers\etc\hosts > NUL 2>&1
 IF %ERRORLEVEL% NEQ 0 ECHO %NEWLINE%^0.0.0.0 adminer.com>>%WINDIR%\System32\drivers\etc\hosts
-
 FIND /C /I "analytics.blue" %WINDIR%\system32\drivers\etc\hosts > NUL 2>&1
 IF %ERRORLEVEL% NEQ 0 ECHO %NEWLINE%^0.0.0.0 analytics.blue>>%WINDIR%\System32\drivers\etc\hosts
 FIND /C /I "api.inwemo.com" %WINDIR%\system32\drivers\etc\hosts > NUL 2>&1
@@ -3310,18 +3304,6 @@ REG DELETE "HKCU\System\GameConfigStore\Parents" /f >NUL 2>&1
 ECHO Manually disabling FSO in some games
 REG ADD "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v "C:\Riot Games\VALORANT\live\ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe" /t REG_SZ /d "~ DISABLEDXMAXIMIZEDWINDOWEDMODE RUNASADMIN" /f >NUL 2>&1
 
-ECHO Disabling User acess control (LUA)
-REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System" /v "ConsentPromptBehaviorAdmin" /t REG_DWORD /d "0" /f >NUL 2>&1
-REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System" /v "ConsentPromptBehaviorUser" /t REG_DWORD /d "0" /f >NUL 2>&1
-REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableInstallerDetection" /t REG_DWORD /d "0" /f >NUL 2>&1
-REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableLUA" /t REG_DWORD /d "0" /f >NUL 2>&1
-REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableSecureUIAPaths" /t REG_DWORD /d "0" /f >NUL 2>&1
-REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableUIADesktopToggle" /t REG_DWORD /d "0" /f >NUL 2>&1
-REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableVirtualization" /t REG_DWORD /d "0" /f >NUL 2>&1
-REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System" /v "FilterAdministratorToken" /t REG_DWORD /d "0" /f >NUL 2>&1
-REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System" /v "PromptOnSecureDesktop" /t REG_DWORD /d "0" /f >NUL 2>&1
-REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System" /v "ValidateAdminCodeSignatures" /t REG_DWORD /d "0" /f >NUL 2>&1
-
 ECHO Disabling driver updates and searching
 REG ADD "HKLM\Software\Microsoft\PolicyManager\current\device\Update" /v "ExcludeWUDriversInQualityUpdate" /t REG_DWORD /d "1" /f >NUL 2>&1
 REG ADD "HKLM\Software\Microsoft\PolicyManager\default\Update" /v "ExcludeWUDriversInQualityUpdate" /t REG_DWORD /d "1" /f >NUL 2>&1
@@ -4060,7 +4042,6 @@ BCDEDIT /set useplatformtick Yes >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\AeLookupSvc" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\ALG" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\AppIDSvc" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
-REG ADD "HKLM\System\CurrentControlSet\Services\Appinfo" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\AppMgmt" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\AppReadiness" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
 REG ADD "HKLM\System\CurrentControlSet\Services\AppXSvc" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
@@ -4393,6 +4374,44 @@ goto :nextquestion
 
 :nextquestion
 ECHO.
+Echo. Do you play VALORANT?
+Echo. 
+Echo. [1] Yes
+Echo. 
+Echo. [2] No
+Echo. 
+choice /c:12 /n > NUL 2>&1
+if errorlevel 2 goto NOVALORANT
+if errorlevel 1 goto VALORANT
+
+:VALORANT
+ECHO Your Answer:
+ECHO 1
+bcdedit.exe /set {current} nx OptIn >NUL 2>&1
+bcdedit.exe /set testsigning off >NUL 2>&1
+bcdedit.exe /set nointegritychecks off >NUL 2>&1
+REG ADD "HKLM\System\CurrentControlSet\Services\Appinfo" /v "Start" /t REG_DWORD /d "2" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableVirtualization" /t REG_DWORD /d "1" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableInstallerDetection" /t REG_DWORD /d "1" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "PromptOnSecureDesktop" /t REG_DWORD /d "1" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableLUA" /t REG_DWORD /d "1" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableSecureUIAPaths" /t REG_DWORD /d "1" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "ConsentPromptBehaviorAdmin" /t REG_DWORD /d "5" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "ValidateAdminCodeSignatures" /t REG_DWORD /d "0" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableUIADesktopToggle" /t REG_DWORD /d "0" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "ConsentPromptBehaviorUser" /t REG_DWORD /d "3" /f >NUL 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "FilterAdministratorToken" /t REG_DWORD /d "0" /f >NUL 2>&1
+ECHO.
+goto :nextquestion
+
+:NOVALORANT
+ECHO Your Answer:
+ECHO 2
+ECHO.
+goto :nextquestion
+
+:nextquestion
+ECHO.
 Echo. Disable AFD? (Will make set STATIC IP a must)
 Echo. 
 Echo. [1] Yes
@@ -4485,3 +4504,21 @@ pause
 ::ECHO Installing Light Lite Theme
 ::)
 ::)
+
+::IF EXIST "C:\Program Files\Process Hacker 2\ProcessHacker.exe" ECHO Debloating Process Hacker
+::taskkill /f /im "Process Hacker.exe" >NUL 2>&1
+::ren "C:\Program Files\Process Hacker 2" PH >NUL 2>&1
+::del "C:\Program Files\PH\kprocesshacker.sys" >NUL 2>&1
+::ren "C:\Program Files\PH\ProcessHacker.exe" PH.exe >NUL 2>&1
+::ren "C:\Program Files\PH\ProcessHacker.sig" PH.sig >NUL 2>&1
+::del "C:\Users\%username%\desktop\Process Hacker 2.lnk" >NUL 2>&1
+::del /F /Q "%appdata%\Process Hacker 2\settings.xml" >NUL 2>&1
+::mkdir "%appdata%\Process Hacker 2" >NUL 2>&1
+::echo ^<settings^> >>"%appdata%\Process Hacker 2\settings.xml"
+::echo ^<setting name="DisabledPlugins"^>DotNetTools.dll^|ExtendedNotifications.dll^|ExtendedServices.dll^|ExtendedTools.dll^|HardwareDevices.dll^|NetworkTools.dll^|OnlineChecks.dll^|SbieSupport.dll^|ToolStatus.dll^|Updater.dll^|UserNotes.dll^</setting^> >>"%appdata%\Process Hacker 2\settings.xml"
+::echo ^<setting name="ProcessTreeListColumns"^>@96^|0,0,200^|2,1,45^|3,2,70^|22,6,45^|45,3,90^|46,5,100^|52,4,80^</setting^> >>"%appdata%\Process Hacker 2\settings.xml"
+::echo ^</settings^> >>"%appdata%\Process Hacker 2\settings.xml"
+
+::IF EXIST "C:\Program Files\PH\PH.exe" ECHO Replacing taskmgr to Process Hacker...
+::IF EXIST "C:\Program Files\PH\PH.exe" REG ADD "HKLM\System\CurrentControlSet\Services\PCW" /v "Start" /t REG_DWORD /d "4" /f >NUL 2>&1
+::IF EXIST "C:\Program Files\PH\PH.exe" REG ADD "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\taskmgr.exe" /v "Debugger" /t REG_SZ /d "C:\Program Files\PH\PH.exe" /f >NUL 2>&1
