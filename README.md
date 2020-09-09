@@ -1,3 +1,7 @@
+My folder of usefull files for tweaking:
+https://drive.google.com/file/d/1B2slWk3C0b_WDpDAWAm3W1fvUStRH7lD/view?usp=sharing
+
+What the .bat does:
 - Enables and starts required services to run the script completly
 - Disables possible autoruns
 - Disables Tracking Services and Data Collection
